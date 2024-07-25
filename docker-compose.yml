@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  vscode:
+    build:
+      context: .
+      args:
+        - USER=${USER:-vscode}
+        - USER_ID=${USER_ID:-1000}
+        - GROUP_ID=${GROUP_ID:-1000}
+    image: vscode-server:${TAG:-latest}
+    container_name: vscode-server
+    environment:
+      - WORKDIR=${WORKDIR:-workspace}
+      - VSCODE_SERVE_MODE=${VSCODE_SERVE_MODE:-local}
+      - VSCODE_KEYRING_PASS=${VSCODE_KEYRING_PASS}
+      - VSCODE_SERVER_PORT=${VSCODE_SERVER_PORT:-8000}
+      - CONNECTION_TOKEN=${CONNECTION_TOKEN}
+    ports:
+      - "${VSCODE_SERVER_PORT:-8000}:8000"
+    volumes:
+      - vscode_data:/home/${USER:-vscode}/.vscode
+      - vscode_server_data:/home/${USER:-vscode}/.vscode-server
+      - workdir_data:/home/${USER:-vscode}/${WORKDIR:-workspace}
+    working_dir: /home/${USER:-vscode}/${WORKDIR:-workspace}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${VSCODE_SERVER_PORT:-8000}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  vscode_data:
+  vscode_server_data:
+  workdir_data:
