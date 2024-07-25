@@ -35,3 +35,8 @@ jobs:
           tags: |
             ghcr.io/mohamedelashri/vscode-container:${{ github.event.inputs.tag }}
             ghcr.io/mohamedelashri/vscode-container:latest
+          build-args: |
+            USER=vscode
+            USER_ID=1000
+            GROUP_ID=1000
+            WORKDIR=workspace
