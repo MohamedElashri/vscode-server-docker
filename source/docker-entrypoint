@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+
+# Run a dbus session, which unlocks the gnome-keyring
+dbus-run-session -- sh -c "echo ${VSCODE_KEYRING_PASS} | gnome-keyring-daemon --unlock && exec $@"
