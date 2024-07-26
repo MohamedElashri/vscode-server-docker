@@ -107,24 +107,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
-
-To use this setup:
-
-1. Create a new directory for your project.
-2. Create the following files in the directory:
-   - `Dockerfile` (use the one from your original setup)
-   - `docker-compose.yml` (use the one provided above)
-   - `.env` (use the example provided above, but modify the values as needed)
-   - `README.md` (use the content provided above)
-   - `LICENSE` (create this file with the MIT License text)
-3. Create a `source` directory and add the `docker-entrypoint` and `vscode-start` scripts from your original setup.
-4. Modify the `vscode-start` script to include password protection:
-
-```bash
-#!/bin/bash
-code serve-web --host 0.0.0.0 --port ${VSCODE_SERVER_PORT} --without-connection-token --auth none --password "${PASSWORD}"
-```
-
-This setup provides a production-ready VSCode server in a Docker container, with password protection and easy configuration through environment variables. The README.md file gives users all the information they need to set up and use the project.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file.
