@@ -4,6 +4,7 @@ ARG USER_ID=1000
 ARG GROUP_ID=1000
 ENV WORKDIR=workspace
 ENV DONT_PROMPT_WSL_INSTALL=1
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Update and install basic packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
