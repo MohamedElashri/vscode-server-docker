@@ -1,4 +1,4 @@
-FROM ubuntu:23.10
+FROM ubuntu:22.04
 ARG USER=vscode
 ARG USER_ID=1000
 ARG GROUP_ID=1000
@@ -30,9 +30,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends code
 RUN apt-get remove -y --autoremove --purge gpg apt-transport-https \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Create user and group
-RUN groupadd -g ${GROUP_ID} ${USER} \
-    && useradd -m -u ${USER_ID} -g ${GROUP_ID} -G sudo -s /bin/bash ${USER} \
+# Create user and group with error handling
+RUN groupadd -f -g ${GROUP_ID} ${USER} || groupadd -f ${USER} \
+    && useradd -m -u ${USER_ID} -g ${GROUP_ID} -G sudo -s /bin/bash ${USER} 2>/dev/null \
+    || useradd -m -g ${USER} -G sudo -s /bin/bash ${USER} \
     && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Switch to the created user
