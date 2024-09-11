@@ -1,5 +1,10 @@
 #!/bin/bash
 set -e
 
+if [ -z "$VSCODE_KEYRING_PASS" ]; then
+    echo "VSCODE_KEYRING_PASS is not set. Please set it to a secure password."
+    exit 1
+fi
+
 # Run a dbus session, which unlocks the gnome-keyring
-dbus-run-session -- sh -c "echo ${VSCODE_KEYRING_PASS} | gnome-keyring-daemon --unlock && exec $@"
+exec dbus-run-session -- sh -c "echo ${VSCODE_KEYRING_PASS} | gnome-keyring-daemon --unlock && exec $@"
