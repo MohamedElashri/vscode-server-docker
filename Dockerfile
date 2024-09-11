@@ -5,18 +5,33 @@ ARG GROUP_ID=1000
 ENV WORKDIR=workspace
 ENV DONT_PROMPT_WSL_INSTALL=1
 
-# Create a new user and group
+# Update and install basic packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl gpg apt-transport-https ca-certificates sudo \
-    tzdata gnome-keyring python3-minimal git build-essential \
-    && curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg \
+    curl \
+    gpg \
+    apt-transport-https \
+    ca-certificates \
+    sudo \
+    tzdata \
+    gnome-keyring \
+    python3-minimal \
+    git \
+    build-essential
+
+# Add Microsoft GPG key and repository
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg \
     && install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/ \
-    && echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list \
-    && apt-get update && apt-get install -y --no-install-recommends code \
-    && apt-get remove -y --autoremove --purge gpg apt-transport-https \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    # Create the group and user unconditionally
-    && groupadd -g ${GROUP_ID} ${USER} \
+    && echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list
+
+# Install VS Code
+RUN apt-get update && apt-get install -y --no-install-recommends code
+
+# Clean up
+RUN apt-get remove -y --autoremove --purge gpg apt-transport-https \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create user and group
+RUN groupadd -g ${GROUP_ID} ${USER} \
     && useradd -m -u ${USER_ID} -g ${GROUP_ID} -G sudo -s /bin/bash ${USER} \
     && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
