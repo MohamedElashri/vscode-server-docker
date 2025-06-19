@@ -26,7 +26,6 @@ jobs:
         id: fetch_vscode
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const latest = await github.rest.repos.getLatestRelease({
               owner: 'microsoft',
@@ -37,7 +36,7 @@ jobs:
       - name: Determine version to build
         id: set_version
         run: |
-          if [ "${GITHUB_EVENT_NAME}" = "push" ] && [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+          if [ "${{ github.event_name }}" = "push" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
             echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           else
             echo "version=${{ steps.fetch_vscode.outputs.version }}" >> $GITHUB_OUTPUT
@@ -47,14 +46,12 @@ jobs:
         id: check_release
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const tag = '${{ steps.set_version.outputs.version }}';
             try {
               await github.rest.repos.getReleaseByTag({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                tag
+                tag: '${{ steps.set_version.outputs.version }}'
               });
               core.setOutput('exists', 'true');
             } catch (error) {
@@ -68,8 +65,9 @@ jobs:
       - name: Create GitHub release for VSCode ${{ steps.set_version.outputs.version }}
         if: steps.check_release.outputs.exists == 'false'
         uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ steps.set_version.outputs.version }}
           release_name: VSCode ${{ steps.set_version.outputs.version }}
           body: Automated release for VSCode version ${{ steps.set_version.outputs.version }}
