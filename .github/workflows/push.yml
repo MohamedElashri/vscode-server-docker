@@ -2,7 +2,6 @@ name: Build and push Docker image
 
 on:
   schedule:
-    # every day at midnight UTC
     - cron: '0 0 * * *'
   workflow_dispatch:
 
@@ -42,7 +41,7 @@ jobs:
             echo "version=${{ steps.fetch_vscode.outputs.version }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Check for existing release
+      - name: Check for existing GitHub release
         id: check_release
         uses: actions/github-script@v6
         with:
@@ -55,11 +54,7 @@ jobs:
               });
               core.setOutput('exists', 'true');
             } catch (error) {
-              if (error.status === 404) {
-                core.setOutput('exists', 'false');
-              } else {
-                throw error;
-              }
+              core.setOutput('exists', error.status === 404 ? 'false' : 'error');
             }
 
       - name: Create GitHub release for VSCode ${{ steps.set_version.outputs.version }}
@@ -74,7 +69,22 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Check Docker Hub for existing image
+        id: check_docker
+        run: |
+          if docker manifest inspect melashri/vscode-server:${{ steps.set_version.outputs.version }} > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Skip build if image already exists
+        if: steps.check_docker.outputs.exists == 'true'
+        run: |
+          echo " Image melashri/vscode-server:${{ steps.set_version.outputs.version }} already exists on Docker Hub. Nothing to do."
+
       - name: Build and push Docker image
+        if: steps.check_docker.outputs.exists == 'false'
         uses: docker/build-push-action@v4
         with:
           push: true
